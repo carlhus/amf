@@ -205,6 +205,30 @@ func RATRestrictionInformationToNgap(value models.RatType) ie.RATRestrictionInfo
 	return result
 }
 
+// SupportedTAItemRatType returns the RatType a Supported TA declares through its
+// RAT Information extension, or "" when it declares none.
+func SupportedTAItemRatType(item ie.SupportedTAItem) models.RatType {
+	if item.IEExtensions == nil {
+		return ""
+	}
+	for _, extension := range item.IEExtensions.List {
+		if extension.RATInformation == nil {
+			continue
+		}
+		switch extension.RATInformation.Value {
+		case ie.RATInformationPresentNRLEO:
+			return models.RatType_NR_LEO
+		case ie.RATInformationPresentNRMEO:
+			return models.RatType_NR_MEO
+		case ie.RATInformationPresentNRGEO:
+			return models.RatType_NR_GEO
+		case ie.RATInformationPresentNROTHERSAT:
+			return models.RatType_NR_OTHER_SAT
+		}
+	}
+	return ""
+}
+
 func RanIdToModels(value ie.GlobalRANNodeID) models.GlobalRanNodeId {
 	result := models.GlobalRanNodeId{}
 	switch choice := value.Choice.(type) {

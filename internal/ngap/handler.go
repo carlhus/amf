@@ -57,10 +57,12 @@ func handleNGSetupRequestMain(ran *context.AmfRan,
 			continue
 		}
 		tac := hex.EncodeToString(supportedTAItem.TAC.Value)
+		ratType := ngapConvert.SupportedTAItemRatType(supportedTAItem)
 		capOfSupportTai := cap(ran.SupportedTAList)
 		for j := 0; j < len(supportedTAItem.BroadcastPLMNList.List); j++ {
 			supportedTAI := context.NewSupportedTAI()
 			supportedTAI.Tai.Tac = tac
+			supportedTAI.RatType = ratType
 			broadcastPLMNItem := supportedTAItem.BroadcastPLMNList.List[j]
 			if broadcastPLMNItem.PLMNIdentity == nil || broadcastPLMNItem.TAISliceSupportList == nil {
 				continue
@@ -1967,10 +1969,12 @@ func handleRANConfigurationUpdateMain(ran *context.AmfRan,
 				continue
 			}
 			tac := hex.EncodeToString(supportedTAItem.TAC.Value)
+			ratType := ngapConvert.SupportedTAItemRatType(supportedTAItem)
 			capOfSupportTai := cap(ran.SupportedTAList)
 			for j := 0; j < len(supportedTAItem.BroadcastPLMNList.List); j++ {
 				supportedTAI := context.NewSupportedTAI()
 				supportedTAI.Tai.Tac = tac
+				supportedTAI.RatType = ratType
 				broadcastPLMNItem := supportedTAItem.BroadcastPLMNList.List[j]
 				if broadcastPLMNItem.PLMNIdentity == nil || broadcastPLMNItem.TAISliceSupportList == nil {
 					continue

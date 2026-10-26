@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net"
+	"reflect"
 	"strings"
 	"sync"
 
@@ -44,6 +45,8 @@ type AmfRan struct {
 type SupportedTAI struct {
 	Tai        models.Tai
 	SNssaiList []models.Snssai
+	// RatType comes from the TA's RAT Information in NG Setup, empty when absent.
+	RatType models.RatType
 }
 
 func NewSupportedTAI() (tai SupportedTAI) {
@@ -233,14 +236,14 @@ func (ran *AmfRan) RanID() string {
 	}
 }
 
-func (ran *AmfRan) UeRatType() models.RatType {
+func (ran *AmfRan) UeRatType(tai models.Tai) models.RatType {
 	// In TS 23.501 5.3.2.3
 	// For 3GPP access the AMF determines the RAT type the UE is camping on based
 	// on the Global RAN Node IDs associated with the N2 interface and
 	// additionally the Tracking Area indicated by NG-RAN
 	switch ran.RanPresent {
 	case RanPresentGNbId:
-		return models.RatType_NR
+		return ran.supportedTaiRatType(tai)
 	case RanPresentNgeNbId:
 		return models.RatType_NR
 	case RanPresentN3IwfId:
@@ -254,4 +257,15 @@ func (ran *AmfRan) UeRatType() models.RatType {
 	default:
 		return models.RatType_NR
 	}
+}
+
+// supportedTaiRatType returns the RAT Information the gNB declared for tai,
+// falling back to NR when the TA declared none.
+func (ran *AmfRan) supportedTaiRatType(tai models.Tai) models.RatType {
+	for _, supported := range ran.SupportedTAList {
+		if supported.RatType != "" && reflect.DeepEqual(supported.Tai, tai) {
+			return supported.RatType
+		}
+	}
+	return models.RatType_NR
 }
